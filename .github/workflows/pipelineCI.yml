@@ -30,4 +30,5 @@ jobs:
           -Dsonar.projectKey=LukasRL_Laboratorio-final \
           -Dsonar.organization=lukasrl \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.branch.name=LR-Laboratorio-final
