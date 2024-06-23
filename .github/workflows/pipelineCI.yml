@@ -20,23 +20,23 @@ jobs:
     # - name: Install dependecy
     #   run: npm install
 
-    - name: Install SonarCloud Scanner
+    - name: Install SonarCloud Scanner locally
+      run: npm install sonar-scanner --save-dev
+
+    - name: Debug Environment Variables
       run: |
-        npm install -g sonarqube-scanner
+        echo "SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}"
+        echo "SONAR_PROJECT_KEY=LukasRL_Laboratorio-final"
+        echo "SONAR_ORGANIZATION=lukasrl"
+        echo "SONAR_HOST_URL=https://sonarcloud.io"
+        echo "BRANCH_NAME=LR-Laboratorio-final"
     
     - name: Run SonarCloud analysis
       run: |
-            npm install -g sonarqube-scanner
-            sonarqube-scanner \
-            -Dsonar.projectKey=LukasRL_Laboratorio-final  \
-            -Dsonar.organization=lukasrl \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-        
-        
-        
-        
-        
-        
-        
+       npx sonar-scanner \
+       -Dsonar.projectKey=LukasRL_Laboratorio-final \
+       -Dsonar.organization=lukasrl \
+       -Dsonar.sources=. \
+       -Dsonar.host.url=https://sonarcloud.io \
+       -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+       -Dsonar.branch.name=LR-Laboratorio-final
