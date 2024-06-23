@@ -66,32 +66,51 @@ jobs:
     #     java-version: '17'
 
     - name: Run Snyk to check for vulnerabilities
+      id: snyk_scan
       uses: snyk/actions/node@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --all-projects --severity-threshold=high --json > snyk-output.json
+        # args: --all-projects --severity-threshold=high --json > snyk-output.json
+        args: --all-projects --severity-threshold=low --json-file-output=snyk-output.json
     
+        
     - name: Process Snyk JSON output
+      id: process_snyk_output
       run: |
           # Leer el archivo JSON de salida de Snyk
           snyk_output=$(cat snyk-output.json)
-      
-          # Filtrar solo las vulnerabilidades críticas y de alta severidad
-          vulnerabilities=$(echo "$snyk_output" | jq -r '.vulnerabilities[] | select(.severityWithCritical == "high" or .severityWithCritical == "critical")')
-      
+  
+          # Extraer todas las vulnerabilidades
+          vulnerabilities=$(echo "$snyk_output" | jq -c '.vulnerabilities[]')
+  
           # Imprimir encabezado de la tabla
           echo "-----------------------------------------------------------------"
           printf "| %-40s | %-10s | %-15s |\n" "Package" "Severity" "ID"
           echo "-----------------------------------------------------------------"
-      
-          # Imprimir cada vulnerabilidad en formato de tabla
+  
+          # Inicializar flag de vulnerabilidad alta
+          high_severity_found=false
+  
+          # Imprimir cada vulnerabilidad en formato de tabla y verificar si hay alguna de alta severidad
           while IFS= read -r vulnerability; do
             package=$(echo "$vulnerability" | jq -r '.packageName')
-            severity=$(echo "$vulnerability" | jq -r '.severityWithCritical')
+            severity=$(echo "$vulnerability" | jq -r '.severity')
             id=$(echo "$vulnerability" | jq -r '.id')
             printf "| %-40s | %-10s | %-15s |\n" "$package" "$severity" "$id"
+  
+            if [[ "$severity" == "high" ]]; then
+              high_severity_found=true
+            fi
           done <<< "$vulnerabilities"
-      
+  
           # Imprimir pie de tabla
           echo "-----------------------------------------------------------------"
+  
+          # Verificar si se encontró alguna vulnerabilidad de alta severidad
+          if $high_severity_found; then
+            echo "High severity vulnerabilities found. Failing the job."
+            exit 1
+          else
+            echo "No high severity vulnerabilities found. Continuing the job."
+          fi
