@@ -117,3 +117,37 @@ jobs:
     - name: Push Docker
       run: |
         docker push lukasrl/netflix-app:latest
+
+#-----------------------DAST (OWASP ZAP)-------------------------------------
+
+  DAST:
+    needs: DockerScan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Start Application
+      run: |
+        docker run -d --name netflix-app -p 8080:8080 lukasrl/netflix-app:latest
+        sleep 15 # Give the application some time to start
+
+    - name: Run OWASP ZAP Baseline Scan
+      run: |
+        docker run -v $(pwd):/zap/wrk/ -t owasp/zap2docker-stable zap-baseline.py -t http://localhost:8080 -g gen.conf -r zap_report.html
+
+    - name: Upload ZAP Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: zap-report
+        path: zap_report.html
+
+    - name: Check for High Severity Vulnerabilities
+      run: |
+        # Check if ZAP found any high severity issues
+        if grep -q 'High' zap_report.html; then
+          echo "High severity vulnerabilities found in ZAP scan."
+          exit 1
+        else
+          echo "No high severity vulnerabilities found in ZAP scan."
+        fi
