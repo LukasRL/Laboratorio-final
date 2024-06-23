@@ -45,3 +45,14 @@ jobs:
        -Dsonar.host.url=https://sonarcloud.io \
        -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
        -Dsonar.branch.name=LR-Laboratorio-final
+
+    - name: Find report-task.txt
+      run: |
+        echo "Searching for report-task.txt..."
+        find . -name "report-task.txt"
+    # - name: SonarQube Quality Gate Check
+    #   env:
+    #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #   uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+    #   with:
+    #      scanMetadataReportFile: build/sonar/report-task.txt
