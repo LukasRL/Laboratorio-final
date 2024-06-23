@@ -17,8 +17,8 @@ jobs:
       with:
         node-version: '16'
     
-    - name: Install dependecy
-      run: npm install
+    # - name: Install dependecy
+    #   run: npm install
 
     - name: Install SonarCloud Scanner
       run: |
@@ -26,9 +26,17 @@ jobs:
     
     - name: Run SonarCloud analysis
       run: |
-        sonar-scanner \
-          -Dsonar.projectKey=LukasRL_Laboratorio-final \
-          -Dsonar.organization=lukasrl \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.branch.name=LR-Laboratorio-final
+            npm install -g sonarqube-scanner
+            sonarqube-scanner \
+            -Dsonar.projectKey=LukasRL_Laboratorio-final  \
+            -Dsonar.organization=lukasrl \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        
+        
+        
+        
+        
+        
+        
