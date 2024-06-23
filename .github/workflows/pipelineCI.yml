@@ -70,7 +70,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        args: --all-projects --severity-threshold=high --json
+        args: --all-projects --severity-threshold=high --json > snyk-output.json
     
     - name: Process Snyk JSON output
       run: |
