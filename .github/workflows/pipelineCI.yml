@@ -5,49 +5,49 @@ on:
       - LR-Laboratorio-final
 
 jobs:
-  # SAST:
-  #   runs-on: ubuntu-latest
-  #   steps:
+  SAST:
+    runs-on: ubuntu-latest
+    steps:
 
-  #   - name: Set up Node.js 18
-  #     uses: actions/setup-node@v2
-  #     with:
-  #       node-version: '18'
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
 
-  #   - name: Checkout code
-  #     uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-  #   - name: Set up JDK 17
-  #     uses: actions/setup-java@v3
-  #     with:
-  #       distribution: 'adopt'
-  #       java-version: '17'
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'adopt'
+        java-version: '17'
 
-  #   - name: Install SonarCloud Scanner locally
-  #     run: npm install sonar-scanner --save-dev
+    - name: Install SonarCloud Scanner locally
+      run: npm install sonar-scanner --save-dev
   
 
-  #   - name: Run SonarCloud analysis
-  #     run: |
-  #       npx sonar-scanner \
-  #           -Dsonar.projectKey=LukasRL_Laboratorio-final \
-  #           -Dsonar.organization=lukasrl \
-  #           -Dsonar.sources=. \
-  #           -Dsonar.host.url=https://sonarcloud.io \
-  #           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-  #           -Dsonar.branch.name=LR-Laboratorio-final
+    - name: Run SonarCloud analysis
+      run: |
+        npx sonar-scanner \
+            -Dsonar.projectKey=LukasRL_Laboratorio-final \
+            -Dsonar.organization=lukasrl \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.branch.name=LR-Laboratorio-final
 
-  #   - name: SonarQube Quality Gate Check
-  #     env:
-  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #     uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
-  #     with:
-  #       scanMetadataReportFile: './.scannerwork/report-task.txt'
+    - name: SonarQube Quality Gate Check
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+      with:
+        scanMetadataReportFile: './.scannerwork/report-task.txt'
 
 
 #-----------------------SCA--------------------------------------
   SCA:
-    #needs: SAST
+    needs: SAST
     runs-on: ubuntu-latest
     steps:
 
@@ -78,7 +78,7 @@ jobs:
       uses: actions/checkout@v2
       with:
        ref: LR-Laboratorio-final
-       
+
     - name: Docker Login
       uses: docker/login-action@v3.0.0
       with:
