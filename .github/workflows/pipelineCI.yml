@@ -23,54 +23,54 @@ jobs:
         distribution: 'adopt'
         java-version: '17'
 
-  #   - name: Install SonarCloud Scanner locally
-  #     run: npm install sonar-scanner --save-dev
+    - name: Install SonarCloud Scanner locally
+      run: npm install sonar-scanner --save-dev
   
 
-  #   - name: Run SonarCloud analysis
-  #     run: |
-  #       npx sonar-scanner \
-  #           -Dsonar.projectKey=LukasRL_Laboratorio-final \
-  #           -Dsonar.organization=lukasrl \
-  #           -Dsonar.sources=. \
-  #           -Dsonar.host.url=https://sonarcloud.io \
-  #           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-  #           -Dsonar.branch.name=LR-Laboratorio-final
+    - name: Run SonarCloud analysis
+      run: |
+        npx sonar-scanner \
+            -Dsonar.projectKey=LukasRL_Laboratorio-final \
+            -Dsonar.organization=lukasrl \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.branch.name=LR-Laboratorio-final
 
-  #   - name: SonarQube Quality Gate Check
-  #     env:
-  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #     uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
-  #     with:
-  #       scanMetadataReportFile: './.scannerwork/report-task.txt'
+    - name: SonarQube Quality Gate Check
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+      with:
+        scanMetadataReportFile: './.scannerwork/report-task.txt'
 
 
 #-----------------------SCA--------------------------------------
-  # SCA:
-  #   needs: SAST
-  #   runs-on: ubuntu-latest
-  #   steps:
+  SCA:
+    needs: SAST
+    runs-on: ubuntu-latest
+    steps:
 
-  #   - name: Set up Node.js 20
-  #     uses: actions/setup-node@v2
-  #     with:
-  #       node-version: '20'
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
 
-  #   - name: Checkout code
-  #     uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-  #   - name: Run Snyk to check for vulnerabilities
-  #     id: snyk_scan
-  #     uses: snyk/actions/node@master
-  #     env:
-  #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #     with:
-  #       args: --all-projects --severity-threshold=high --json > snyk-output.json
+    - name: Run Snyk to check for vulnerabilities
+      id: snyk_scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --all-projects --severity-threshold=high --json > snyk-output.json
 
 #-----------------------Docker Build Image------------------------------------
 
   DockerBuild:
-    # needs: SCA
+    needs: [SCA, SAST]
     runs-on: self-hosted
     steps:
 
@@ -122,40 +122,51 @@ jobs:
       run: |
         docker push lukasrl/netflix-app:latest
 
-#-----------------------DAST (OWASP ZAP)-------------------------------------
-  DAST:
+#-----------------------Deploy APP-------------------------------------
+  deploy:
     needs: DockerScan
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    runs-on: self-hosted
+    steps: 
+        - name: Clonacion de codigo
+          uses: actions/checkout@v4
+        - name: Despliegue
+          run: |
+            kubectl apply -f deploy.yaml
 
-    - name: Start Application
-      run: |
-        docker run -d --name netflix-app -p 8080:8080 lukasrl/netflix-app:latest
-        sleep 15 # Give the application some time to start
+#-----------------------DAST (OWASP ZAP)-------------------------------------
+  # DAST:
+  #   needs: DockerScan
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
 
-    - name: ZAP Scan
-      uses: zaproxy/action-baseline@v0.12.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
-        target: 'http://localhost:8080'
-        rules_file_name: '.zap/rules.tsv'
-        cmd_options: '-a'
+  #   - name: Start Application
+  #     run: |
+  #       docker run -d --name netflix-app -p 8080:8080 lukasrl/netflix-app:latest
+  #       sleep 15 # Give the application some time to start
 
-    - name: Upload ZAP Report
-      uses: actions/upload-artifact@v2
-      with:
-        name: zap-report
-        path: zap_report.html
+  #   - name: ZAP Scan
+  #     uses: zaproxy/action-baseline@v0.12.0
+  #     with:
+  #       token: ${{ secrets.GITHUB_TOKEN }}
+  #       docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
+  #       target: 'http://localhost:8080'
+  #       rules_file_name: '.zap/rules.tsv'
+  #       cmd_options: '-a'
 
-    - name: Check for High Severity Vulnerabilities
-      run: |
-        # Check if ZAP found any high severity issues
-        if grep -q 'High' zap_report.html; then
-          echo "High severity vulnerabilities found in ZAP scan."
-          exit 1
-        else
-          echo "No high severity vulnerabilities found in ZAP scan."
-        fi
+  #   - name: Upload ZAP Report
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: zap-report
+  #       path: zap_report.html
+
+  #   - name: Check for High Severity Vulnerabilities
+  #     run: |
+  #       # Check if ZAP found any high severity issues
+  #       if grep -q 'High' zap_report.html; then
+  #         echo "High severity vulnerabilities found in ZAP scan."
+  #         exit 1
+  #       else
+  #         echo "No high severity vulnerabilities found in ZAP scan."
+  #       fi
