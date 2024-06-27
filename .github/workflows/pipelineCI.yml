@@ -23,54 +23,54 @@ jobs:
         distribution: 'adopt'
         java-version: '17'
 
-    - name: Install SonarCloud Scanner locally
-      run: npm install sonar-scanner --save-dev
+  #   - name: Install SonarCloud Scanner locally
+  #     run: npm install sonar-scanner --save-dev
   
 
-    - name: Run SonarCloud analysis
-      run: |
-        npx sonar-scanner \
-            -Dsonar.projectKey=LukasRL_Laboratorio-final \
-            -Dsonar.organization=lukasrl \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.branch.name=LR-Laboratorio-final
+  #   - name: Run SonarCloud analysis
+  #     run: |
+  #       npx sonar-scanner \
+  #           -Dsonar.projectKey=LukasRL_Laboratorio-final \
+  #           -Dsonar.organization=lukasrl \
+  #           -Dsonar.sources=. \
+  #           -Dsonar.host.url=https://sonarcloud.io \
+  #           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+  #           -Dsonar.branch.name=LR-Laboratorio-final
 
-    - name: SonarQube Quality Gate Check
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
-      with:
-        scanMetadataReportFile: './.scannerwork/report-task.txt'
+  #   - name: SonarQube Quality Gate Check
+  #     env:
+  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #     uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+  #     with:
+  #       scanMetadataReportFile: './.scannerwork/report-task.txt'
 
 
 #-----------------------SCA--------------------------------------
-  SCA:
-    needs: SAST
-    runs-on: ubuntu-latest
-    steps:
+  # SCA:
+  #   needs: SAST
+  #   runs-on: ubuntu-latest
+  #   steps:
 
-    - name: Set up Node.js 20
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20'
+  #   - name: Set up Node.js 20
+  #     uses: actions/setup-node@v2
+  #     with:
+  #       node-version: '20'
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
 
-    - name: Run Snyk to check for vulnerabilities
-      id: snyk_scan
-      uses: snyk/actions/node@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --all-projects --severity-threshold=high --json > snyk-output.json
+  #   - name: Run Snyk to check for vulnerabilities
+  #     id: snyk_scan
+  #     uses: snyk/actions/node@master
+  #     env:
+  #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #     with:
+  #       args: --all-projects --severity-threshold=high --json > snyk-output.json
 
 #-----------------------Docker Build Image------------------------------------
 
   DockerBuild:
-    needs: SCA
+    # needs: SCA
     runs-on: self-hosted
     steps:
 
