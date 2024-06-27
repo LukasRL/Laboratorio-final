@@ -113,6 +113,10 @@ jobs:
       with:
         image-ref: 'lukasrl/netflix-app:latest'
         format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
 
     - name: Push Docker
       run: |
