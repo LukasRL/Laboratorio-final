@@ -84,8 +84,9 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     
     - name: Build Docker
+    #docker build --tag lukasrl/netflix-app:latest .
       run: |
-        docker build --tag lukasrl/netflix-app:latest .
+         docker build --build-arg TMDB_V3_API_KEY=${{ secrets.TMDB_API_KEY }} --tag lukasrl/netflix-app:latest .
 
     - name: Push Docker
       run: |
