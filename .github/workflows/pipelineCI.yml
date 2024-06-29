@@ -136,7 +136,7 @@ jobs:
 
 #-----------------------DAST (OWASP ZAP)-------------------------------------
   DAST:
-    needs: DockerScan
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -144,7 +144,7 @@ jobs:
 
     - name: Start Application
       run: |
-        docker run -d --name netflix-app -p 8080:8080 lukasrl/netflix-app:latest
+        docker run -d --name netflix-app -p 8080:80 lukasrl/netflix-app:latest
         sleep 15 # Give the application some time to start
 
     - name: ZAP Scan
